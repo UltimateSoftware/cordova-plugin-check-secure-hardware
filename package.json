@@ -1,0 +1,21 @@
+{
+  "name": "cordova-plugin-check-secure-hardware",
+  "version": "0.0.1",
+  "description": "Generates a dummy key and checks if it is in hardware backed secure storage in the Android device",
+  "cordova": {
+    "id": "cordova-plugin-check-secure-hardware",
+    "platforms": [
+      "android"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@devgit.dev.us.corp:7999/~arthurle/cordova-plugin-check-secure-hardware.git"
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "Arthur Leung",
+  "license": "ISC"
+}
