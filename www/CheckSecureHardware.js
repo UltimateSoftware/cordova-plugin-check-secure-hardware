@@ -1,7 +1,7 @@
-var exec = require('cordova/exec');
+var CheckSecureHardware = function(){};
 
 CheckSecureHardware.prototype.checkSecureHardware = function(arg0, success, error) {
-    cordova.exec(success, error, "cordova-plugin-check-secure-hardware", "checkSecureHardware", [arg0]);
+    cordova.exec(success, error, "CheckSecureHardware", "checkSecureHardware", []);
 };
 
 cordova.addConstructor(function() {
