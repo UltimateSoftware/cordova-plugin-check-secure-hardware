@@ -30,6 +30,7 @@ public class CheckSecureHardware extends CordovaPlugin {
         return false;
     }
 
+    //Requires at least Marshmallow (API 23)
     @TargetApi(Build.VERSION_CODES.M)
     private boolean checkSecureHardware() {
         KeyInfo keyInfo = null;
@@ -45,20 +46,23 @@ public class CheckSecureHardware extends CordovaPlugin {
         .setDigests(KeyProperties.DIGEST_SHA256,
         KeyProperties.DIGEST_SHA512)
         .build());
-        System.out.println("got KPG, genegating key");
+
+        System.out.println("got KPG, generating key");
+        KeyPair kp = kpg.generateKeyPair();
+        System.out.println("Key generated: "+kp.getPublic());
+        System.out.println("Getting keyfactory: "+kp.getPublic());
+        KeyFactory factory = KeyFactory.getInstance(kp.getPrivate().getAlgorithm(), "AndroidKeyStore");
+
         // find if key is actually in secure hardware
         // InvalidKeySpecException
-        KeyPair kp = kpg.generateKeyPair();
-        System.out.println("Key generated: "+kp.get);
-        KeyFactory factory = KeyFactory.getInstance("RSA");
-
         keyInfo = factory.getKeySpec(kp.getPrivate(),KeyInfo.class);
         }
         catch (InvalidKeySpecException | InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         if (keyInfo != null){
-            return keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware();
+          System.out.println("Is key in secure hardware? : "+keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware());
+            return keyInfo.isInsideSecureHardware();
         }
         return false;
     }
