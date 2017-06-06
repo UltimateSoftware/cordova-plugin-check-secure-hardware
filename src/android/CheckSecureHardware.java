@@ -61,7 +61,8 @@ public class CheckSecureHardware extends CordovaPlugin {
             e.printStackTrace();
         }
         if (keyInfo != null){
-          System.out.println("Is key in secure hardware? : "+keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware());
+        System.out.println("[DBG] Is auth required? : "+keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware());
+        System.out.println("[DBG] Is key in secure hardware? : "+keyInfo.isInsideSecureHardware());
             return keyInfo.isInsideSecureHardware();
         }
         return false;
