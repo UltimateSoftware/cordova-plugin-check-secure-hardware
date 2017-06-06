@@ -45,9 +45,11 @@ public class CheckSecureHardware extends CordovaPlugin {
         .setDigests(KeyProperties.DIGEST_SHA256,
         KeyProperties.DIGEST_SHA512)
         .build());
+        System.out.println("got KPG, genegating key");
         // find if key is actually in secure hardware
         // InvalidKeySpecException
         KeyPair kp = kpg.generateKeyPair();
+        System.out.println("Key generated: "+kp.get);
         KeyFactory factory = KeyFactory.getInstance("RSA");
 
         keyInfo = factory.getKeySpec(kp.getPrivate(),KeyInfo.class);
