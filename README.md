@@ -32,5 +32,7 @@ Note: Using the "keyInfo.isInsideSecureHardware()" method, it is not possible to
 Tested with:
 
 Google Pixel 32gb   (7.1.2): Has HW secure storage
+
 Oneplus One         (7.1.1): Does not have HW secure storage
+
 Google Nexus 5      (6.0.1): Does not have HW secure storage
