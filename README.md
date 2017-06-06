@@ -36,3 +36,8 @@ Google Pixel 32gb   (7.1.2): Has HW secure storage
 Oneplus One         (7.1.1): Does not have HW secure storage
 
 Google Nexus 5      (6.0.1): Does not have HW secure storage
+
+Asus Zenfone 3      (6.0.1): Has HW secure storage
+
+06-06 15:03:05.417 22188 22271 I System.out: [DBG] Is auth required? : false
+06-06 15:03:05.417 22188 22271 I System.out: [DBG] Is key in secure hardware? : true
