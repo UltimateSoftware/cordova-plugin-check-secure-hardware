@@ -27,7 +27,7 @@ Usage:
 
    - Output (using google pixel): 06-06 13:37:49.277 18309 18444 I System.out: Is key in secure hardware? : true
 
-Note: it is not possible to ascertain what type of hardware implementation (SE or TrustZone) is used to provide this secure storage, but with key extraction is effectively prevented
+Note: Using the "keyInfo.isInsideSecureHardware()" method, it is not possible to ascertain what type of hardware implementation (SE or TrustZone) is used to provide this secure storage, but know that key extraction is effectively prevented
 
 Tested with:
 
