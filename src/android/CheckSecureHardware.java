@@ -20,9 +20,6 @@ import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyInfo;
 import android.security.keystore.KeyProperties;
 
-/**
- * This class echoes a string called from JavaScript.
- */
 public class CheckSecureHardware extends CordovaPlugin {
 
     @Override
