@@ -4,7 +4,7 @@ var CheckSecureHardware = function () {
 var hasHardware = null;
 
 CheckSecureHardware.prototype.checkSecureHardware = function (arg0, success, error) {
-    console.log('executing checksecurehardware');
+    // Calls checkSecureHardware in the Java class
     cordova.exec(success, error, "CheckSecureHardware", "checkSecureHardware", null);
 };
 

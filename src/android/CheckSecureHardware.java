@@ -30,7 +30,6 @@ public class CheckSecureHardware extends CordovaPlugin {
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
     if (action.equals("checkSecureHardware")) {
       boolean hasHardware = this.checkSecureHardware();
-      System.out.println("[DBG] check result: " + hasHardware);
       if (hasHardware){
         callbackContext.success();
         return true;
@@ -43,8 +42,7 @@ public class CheckSecureHardware extends CordovaPlugin {
   @TargetApi(Build.VERSION_CODES.M)
   private boolean checkSecureHardware() {
     KeyInfo keyInfo = null;
-    System.out.println("[DBG] check executed");
-    // generate dummy EC key
+    // Generate dummy EC key
     // NoSuchAlgorithmException if EC unsupported
     try{
       KeyPairGenerator kpg = KeyPairGenerator.getInstance(
@@ -56,13 +54,10 @@ public class CheckSecureHardware extends CordovaPlugin {
                       KeyProperties.DIGEST_SHA512)
               .build());
 
-      System.out.println("[DBG] got KPG, generating key");
       KeyPair kp = kpg.generateKeyPair();
-      System.out.println("[DBG] Key generated: "+kp.getPublic());
-      System.out.println("[DBG] Getting keyfactory: "+kp.getPublic());
       KeyFactory factory = KeyFactory.getInstance(kp.getPrivate().getAlgorithm(), "AndroidKeyStore");
 
-      // find if key is actually in secure hardware
+      // Find if key is actually in secure hardware
       // InvalidKeySpecException
       keyInfo = factory.getKeySpec(kp.getPrivate(),KeyInfo.class);
     }
@@ -71,17 +66,14 @@ public class CheckSecureHardware extends CordovaPlugin {
     }
     if (keyInfo != null){
       try {
-        System.out.println("[DBG] Is auth required? : " + keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware());
-        System.out.println("[DBG] Is key in secure hardware?  ABSBBSBDSA: " + keyInfo.isInsideSecureHardware());
+        // Either condition is true when HW keystore is avaiblable
         boolean result = (keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware() || keyInfo.isInsideSecureHardware());
         KeyStore store = KeyStore.getInstance("AndroidKeyStore");
         store.load(null, null);
         store.deleteEntry("checkSecureHardware");
-        System.out.println("[DBG] Result TEST: "+result);
-        // delete the key after with the alias used
+        // Delete the key after with the alias used
         return result;
       } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException |IOException e) {
-        System.out.println("[DBG] KS exception: "+e.toString());
         e.printStackTrace();
       }
     }
