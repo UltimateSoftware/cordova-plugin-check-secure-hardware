@@ -31,7 +31,7 @@ public class CheckSecureHardware extends CordovaPlugin {
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
     if (action.equals("checkSecureHardware")) {
-      boolean hasHardware = this.checkSecureHardware();
+      boolean hasHardware = (Build.VERSION.SDK_INT >= 23) ? this.checkSecureHardware() : this.checkSecureHardwareLegacy();
       if (hasHardware){
         callbackContext.success();
         return true;
@@ -86,4 +86,6 @@ public class CheckSecureHardware extends CordovaPlugin {
     }
     return false;
   }
+
+  private boolean checkSecureHardwareLegacy()
 }
