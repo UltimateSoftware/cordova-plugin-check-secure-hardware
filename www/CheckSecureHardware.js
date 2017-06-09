@@ -1,7 +1,6 @@
 var exec = require("cordova/exec");
 var CheckSecureHardware = function () {
 };
-var hasHardware = null;
 
 CheckSecureHardware.prototype.checkSecureHardware = function (arg0, success, error) {
     // Calls checkSecureHardware in the Java class

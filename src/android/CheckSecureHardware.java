@@ -26,6 +26,8 @@ import android.security.keystore.KeyProperties;
 
 public class CheckSecureHardware extends CordovaPlugin {
 
+  private String messsage;
+
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
     if (action.equals("checkSecureHardware")) {
@@ -33,8 +35,12 @@ public class CheckSecureHardware extends CordovaPlugin {
       if (hasHardware){
         callbackContext.success();
         return true;
+      } else {
+        callbackContext.error("Secure hardware not available: " + messsage);
+        return false;
       }
     }
+    callbackContext.error(action +" is not a valid action");
     return false;
   }
 
@@ -74,6 +80,7 @@ public class CheckSecureHardware extends CordovaPlugin {
         // Delete the key after with the alias used
         return result;
       } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException |IOException e) {
+        messsage = e.toString();
         e.printStackTrace();
       }
     }
