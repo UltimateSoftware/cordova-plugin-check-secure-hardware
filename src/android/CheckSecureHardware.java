@@ -52,13 +52,13 @@ public class CheckSecureHardware extends CordovaPlugin {
     // NoSuchAlgorithmException if EC unsupported
     try{
       KeyPairGenerator kpg = KeyPairGenerator.getInstance(
-              KeyProperties.KEY_ALGORITHM_EC,"AndroidKeyStore");
+        KeyProperties.KEY_ALGORITHM_EC,"AndroidKeyStore");
       kpg.initialize(new KeyGenParameterSpec.Builder(
-              "checkSecureHardware",
-              KeyProperties.PURPOSE_SIGN|KeyProperties.PURPOSE_VERIFY)
-              .setDigests(KeyProperties.DIGEST_SHA256,
-                      KeyProperties.DIGEST_SHA512)
-              .build());
+        "checkSecureHardware",
+        KeyProperties.PURPOSE_SIGN|KeyProperties.PURPOSE_VERIFY)
+        .setDigests(KeyProperties.DIGEST_SHA256,
+          KeyProperties.DIGEST_SHA512)
+        .build());
 
       KeyPair kp = kpg.generateKeyPair();
       KeyFactory factory = KeyFactory.getInstance(kp.getPrivate().getAlgorithm(), "AndroidKeyStore");
@@ -87,5 +87,10 @@ public class CheckSecureHardware extends CordovaPlugin {
     return false;
   }
 
-  private boolean checkSecureHardwareLegacy()
+  //Fallback to legacy/ JellyBean implementation (API 16)
+  @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+  private boolean checkSecureHardwareLegacy(){
+    System.out.println("This is deprecated, old phones only");
+    return false;
+  }
 }
