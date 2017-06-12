@@ -20,6 +20,7 @@ import java.security.spec.InvalidKeySpecException;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.security.KeyChain;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyInfo;
 import android.security.keystore.KeyProperties;
@@ -36,7 +37,7 @@ public class CheckSecureHardware extends CordovaPlugin {
         callbackContext.success();
         return true;
       } else {
-        callbackContext.error("Secure hardware not available: " + messsage);
+        callbackContext.error("Secure hardware not available, " + messsage);
         return false;
       }
     }
@@ -68,7 +69,7 @@ public class CheckSecureHardware extends CordovaPlugin {
       keyInfo = factory.getKeySpec(kp.getPrivate(),KeyInfo.class);
     }
     catch (InvalidKeySpecException | InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchAlgorithmException e) {
-      e.printStackTrace();
+      messsage = "Failed to generate dummy key or get dummy key info";
     }
     if (keyInfo != null){
       try {
@@ -80,17 +81,16 @@ public class CheckSecureHardware extends CordovaPlugin {
         // Delete the key after with the alias used
         return result;
       } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException |IOException e) {
-        messsage = e.toString();
-        e.printStackTrace();
+        messsage = "Failed to delete dummy key";
       }
     }
     return false;
   }
 
-  //Fallback to legacy/ JellyBean implementation (API 16)
-  @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+  //Fallback to legacy/ JellyBean implementation (API 18)
+  @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
   private boolean checkSecureHardwareLegacy(){
-    System.out.println("This is deprecated, old phones only");
-    return false;
+    // Deprecated for >= API 23
+    return (KeyChain.isBoundKeyAlgorithm(KeyProperties.KEY_ALGORITHM_EC) && KeyChain.isBoundKeyAlgorithm(KeyProperties.KEY_ALGORITHM_RSA));
   }
 }
