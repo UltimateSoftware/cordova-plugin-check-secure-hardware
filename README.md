@@ -13,7 +13,6 @@ Usage:
   - Plugin is loaded into window.plugins in the app
   - example usage: copy this block to app.module.js under the run method for debugging
 
-        ```
         if (window.plugins) {
             this.checkSecureHardware()
                 .then(() => {
@@ -25,7 +24,6 @@ Usage:
                     );
                 }
         }
-        ```
 
 Note: Using the "keyInfo.isInsideSecureHardware()" method, it is not possible to ascertain what type of hardware implementation (SE or TrustZone) is used to provide this secure storage, but know that key extraction is effectively prevented
 
