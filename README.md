@@ -25,14 +25,12 @@ Usage:
                 }
         }
 
-This plugin works by generating an RSA test key, storing it in Android KeyStore, and retrieving the test key.
-The retrieved key has a KeyInfo class where we can access isInsideSecureHardware() and isUserAuthenticationRequirementEnforcedBySecureHardware()
+This plugin works by generating an RSA dummy key, storing it in Android KeyStore, and retrieving the test key.
+If RSA key generation fails, it falls back to generating an EC dummy key and performs the same check.
+The retrieved key has a KeyInfo class where we can access isInsideSecureHardware()
 to help us determine whether:
 
 1. The Android device has hardware support for storing keys, to prevent key extraction by attackers
-2. The Key requires that the user authenticate every time on each use (requires at least 1 fingerprint enrolled)
-
-See https://developer.android.com/reference/android/security/keystore/KeyGenParameterSpec.Builder.html for why the requirement exists in #2
 
 Note: Using the "keyInfo.isInsideSecureHardware()" method, it is not possible to ascertain what type of hardware implementation (SE or TrustZone) is used to provide this secure storage, but know that key extraction is effectively prevented
 
