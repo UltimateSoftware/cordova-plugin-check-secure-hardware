@@ -25,18 +25,13 @@ Usage:
                 }
         }
 
+This plugin works by generating an RSA dummy key, storing it in Android KeyStore, and retrieving the test key.
+If RSA key generation fails, it falls back to generating an EC dummy key and performs the same check.
+The retrieved key has a KeyInfo class where we can access isInsideSecureHardware()
+to help us determine whether:
+
+1. The Android device has hardware support for storing keys, to prevent key extraction by attackers
+
 Note: Using the "keyInfo.isInsideSecureHardware()" method, it is not possible to ascertain what type of hardware implementation (SE or TrustZone) is used to provide this secure storage, but know that key extraction is effectively prevented
 
-Tested with:
-
-Google Pixel 32gb   (7.1.2/ Nougat): Has HW secure storage
-
-Oneplus One         (7.1.1/ Nougat): Does not have HW secure storage
-
-Google Nexus 5      (6.0.1/ Marshmallow): Does not have HW secure storage
-
-Samsung Galaxy Nexus (4.4.4/ KitKat): Does not have HW secure storage
-
-Asus Zenfone 3      (6.0.1/ Marshmallow): Has HW secure storage
-
-
+See https://ulti.quip.com/SM4JAY2sXiHi#TNcACAhNowa for a list of devices that were tested for hardware backed secure storage with this plugin
