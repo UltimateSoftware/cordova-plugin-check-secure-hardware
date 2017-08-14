@@ -34,5 +34,4 @@ to help us determine whether:
 
 Note: Using the "keyInfo.isInsideSecureHardware()" method, it is not possible to ascertain what type of hardware implementation (SE or TrustZone) is used to provide this secure storage, but know that key extraction is effectively prevented
 
-
-
+See https://ulti.quip.com/SM4JAY2sXiHi#TNcACAhNowa for a list of devices that were tested for hardware backed secure storage with this plugin
