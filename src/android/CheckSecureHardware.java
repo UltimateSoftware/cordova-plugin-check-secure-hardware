@@ -133,6 +133,6 @@ public class CheckSecureHardware extends CordovaPlugin {
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
   private boolean checkSecureHardwareLegacy(){
     // Deprecated for >= API 23
-    return (KeyChain.isBoundKeyAlgorithm(KeyProperties.KEY_ALGORITHM_EC) && KeyChain.isBoundKeyAlgorithm(KeyProperties.KEY_ALGORITHM_RSA));
+    return KeyChain.isBoundKeyAlgorithm(KeyProperties.KEY_ALGORITHM_RSA);
   }
 }
