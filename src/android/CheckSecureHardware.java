@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -15,39 +16,52 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Calendar;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.os.Build;
 import android.security.KeyChain;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyInfo;
 import android.security.keystore.KeyProperties;
 
+import javax.security.auth.x500.X500Principal;
+
 public class CheckSecureHardware extends CordovaPlugin {
 
-  private final String dummyKeyNamespace = "checkSecureHardware";
-  private final String storeTarget = "AndroidKeyStore";
+  private final String ALIAS = "checkSecureHardware";
+  private final String STORE_TARGET = "AndroidKeyStore";
 
-  private String keyErrorMessage;
+  private final String ERROR_MSG = "Secure hardware not available, ";
+  private String keyErrorDesc;
 
   @Override
-  public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+  public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
 
-    if (action.equals(dummyKeyNamespace)) {
-      boolean hasHardware = (Build.VERSION.SDK_INT >= 23) ? this.checkSecureHardware() : this.checkSecureHardwareLegacy();
+    if (action.equals(ALIAS)) {
+      cordova.getThreadPool().execute(new Runnable() {
+        public void run() {
+          if (Build.VERSION.SDK_INT < 19) {
+            // Supports only API 19+
+            callbackContext.error(ERROR_MSG + "unsupported version -- must be API 19+");
+          }
 
-      if (hasHardware){
-        callbackContext.success();
-        return true;
-      } else {
-        callbackContext.error("Secure hardware not available, " + keyErrorMessage);
-        return false;
-      }
+          boolean hasHardware = (Build.VERSION.SDK_INT >= 23) ? checkSecureHardware() : checkSecureHardwareLegacy();
+
+          if (hasHardware) {
+            callbackContext.success();
+          } else {
+            callbackContext.error(ERROR_MSG + keyErrorDesc);
+          }
+        }
+      });
+      return true;
     }
 
-    callbackContext.error(action +" is not a valid action");
     return false;
   }
 
@@ -57,54 +71,72 @@ public class CheckSecureHardware extends CordovaPlugin {
     KeyInfo keyInfo = null;
     boolean keyInfoGeneratedInSecureHardware = false;
 
-    String[] priorityListAlgs = {KeyProperties.KEY_ALGORITHM_RSA, KeyProperties.KEY_ALGORITHM_EC};
+    try {
+      KeyPair kp = generateKeyPairFromSpec();
+      PrivateKey privateKey = kp.getPrivate();
+      KeyFactory factory = KeyFactory.getInstance(privateKey.getAlgorithm(), STORE_TARGET);
+      // Generate dummy key and import it to see if it's in hardware backed Secure Storage
+      keyInfo = factory.getKeySpec(privateKey, KeyInfo.class);
+      keyInfoGeneratedInSecureHardware = keyInfo.isInsideSecureHardware();
+    } catch (InvalidKeySpecException | InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchAlgorithmException | IllegalStateException e) {
+      keyErrorDesc = "Failed to generate RSA dummy key.";
+    }
 
-    for (int i = 0; i < priorityListAlgs.length && !keyInfoGeneratedInSecureHardware; i++) {
+    if (keyInfo != null) {
+      // Delete the dummy key
       try {
-        KeyPair kp = generateKeyPair(priorityListAlgs[i]);
-        KeyFactory factory = KeyFactory.getInstance(kp.getPrivate().getAlgorithm(), storeTarget);
-        // Generate dummy key and import it to see if it's in hardware backed Secure Storage
-        keyInfo = factory.getKeySpec(kp.getPrivate(), KeyInfo.class);
-        keyInfoGeneratedInSecureHardware = keyInfo.isInsideSecureHardware();
-      } catch (InvalidKeySpecException | InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchAlgorithmException e) {
-        keyErrorMessage = "Failed to generate dummy key with algorithm: " + priorityListAlgs[i];
-      }
-
-      if (keyInfo != null) {
-        // Delete the dummy key
-        try {
-          KeyStore store = KeyStore.getInstance(storeTarget);
-          store.load(null, null);
-          store.deleteEntry(dummyKeyNamespace);
-        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-          keyErrorMessage = "Failed to delete dummy key for algorithm: " + priorityListAlgs[i];
-        }
+        KeyStore store = KeyStore.getInstance(STORE_TARGET);
+        store.load(null, null);
+        store.deleteEntry(ALIAS);
+      } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+        keyErrorDesc = "Failed to delete RSA dummy key.";
       }
     }
 
     return keyInfoGeneratedInSecureHardware;
   }
 
-  @TargetApi(Build.VERSION_CODES.M)
-  private KeyPair generateKeyPair(String keyAlgorithm) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+  /**
+   * Generates a KeyPair with the same form as the KeyPair generated by cordova-plugin-secure-storage
+   * except this one uses non-deprecated API
+   *
+   * @return
+   * @throws InvalidAlgorithmParameterException
+   * @throws NoSuchProviderException
+   * @throws NoSuchAlgorithmException
+   * @throws IllegalStateException
+   */
+  @TargetApi(23)
+  private KeyPair generateKeyPairFromSpec() throws InvalidAlgorithmParameterException, NoSuchProviderException, NoSuchAlgorithmException, IllegalStateException {
+    Calendar notBefore = Calendar.getInstance();
+    Calendar notAfter = Calendar.getInstance();
+    notAfter.add(Calendar.YEAR, 100);
 
-    KeyPairGenerator kpg = KeyPairGenerator.getInstance(
-            keyAlgorithm, storeTarget);
+    Context ctx = cordova.getActivity().getApplicationContext();
+    String principalString = String.format("CN=%s, OU=%s", ALIAS, ctx);
 
-    kpg.initialize(new KeyGenParameterSpec.Builder(
-            dummyKeyNamespace,
-            KeyProperties.PURPOSE_SIGN|KeyProperties.PURPOSE_VERIFY)
-            .setDigests(KeyProperties.DIGEST_SHA256,
-                    KeyProperties.DIGEST_SHA512)
-            .build());
+    KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(ALIAS,
+      KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_DECRYPT | KeyProperties.PURPOSE_ENCRYPT)
+      .setCertificateSubject(new X500Principal(principalString))
+      .setCertificateSerialNumber(BigInteger.ONE)
+      .setCertificateNotBefore(notBefore.getTime())
+      .setCertificateNotAfter(notAfter.getTime())
+      .setKeySize(2048)
+      .setUserAuthenticationRequired(true)
+      .setUserAuthenticationValidityDurationSeconds(60 * 24) // 24 Hours
+      .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
+      .setBlockModes(KeyProperties.BLOCK_MODE_ECB)
+      .build();
 
-    return kpg.generateKeyPair();
+    KeyPairGenerator kpGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, STORE_TARGET);
+    kpGenerator.initialize(spec);
+    return kpGenerator.generateKeyPair();
   }
 
-  // Fallback to legacy / JellyBean implementation (API 18)
+  // Fallback to legacy (pre API 23) / JellyBean implementation (API 18)
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
   private boolean checkSecureHardwareLegacy(){
     // Deprecated for >= API 23
-    return (KeyChain.isBoundKeyAlgorithm(KeyProperties.KEY_ALGORITHM_EC) && KeyChain.isBoundKeyAlgorithm(KeyProperties.KEY_ALGORITHM_RSA));
+    return KeyChain.isBoundKeyAlgorithm(KeyProperties.KEY_ALGORITHM_RSA);
   }
 }

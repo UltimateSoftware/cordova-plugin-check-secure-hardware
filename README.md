@@ -26,7 +26,6 @@ Usage:
         }
 
 This plugin works by generating an RSA dummy key, storing it in Android KeyStore, and retrieving the test key.
-If RSA key generation fails, it falls back to generating an EC dummy key and performs the same check.
 The retrieved key has a KeyInfo class where we can access isInsideSecureHardware()
 to help us determine whether:
 
