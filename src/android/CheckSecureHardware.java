@@ -79,7 +79,7 @@ public class CheckSecureHardware extends CordovaPlugin {
       keyInfo = factory.getKeySpec(privateKey, KeyInfo.class);
       keyInfoGeneratedInSecureHardware = keyInfo.isInsideSecureHardware();
     } catch (InvalidKeySpecException | InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchAlgorithmException | IllegalStateException e) {
-      keyErrorDesc = "Failed to generate RSA dummy key.";
+      keyErrorDesc = "Failed to generate RSA dummy key." + getErrorInfo(e);
     }
 
     if (keyInfo != null) {
@@ -89,7 +89,7 @@ public class CheckSecureHardware extends CordovaPlugin {
         store.load(null, null);
         store.deleteEntry(ALIAS);
       } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-        keyErrorDesc = "Failed to delete RSA dummy key.";
+        keyErrorDesc = "Failed to delete RSA dummy key." + getErrorInfo(e);
       }
     }
 
@@ -135,8 +135,15 @@ public class CheckSecureHardware extends CordovaPlugin {
 
   // Fallback to legacy (pre API 23) / JellyBean implementation (API 18)
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-  private boolean checkSecureHardwareLegacy(){
+  private boolean checkSecureHardwareLegacy() {
     // Deprecated for >= API 23
     return KeyChain.isBoundKeyAlgorithm(KeyProperties.KEY_ALGORITHM_RSA);
+  }
+
+  /**
+   * Extract useful debug information from Exception
+   */
+  private String getErrorInfo(Exception e) {
+    return " " + e.getClass() + " : " + e.getMessage();
   }
 }
