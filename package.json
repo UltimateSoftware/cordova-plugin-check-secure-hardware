@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-check-secure-hardware",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Generates a dummy key and checks if it is in hardware backed secure storage in the Android device",
   "cordova": {
     "id": "cordova-plugin-check-secure-hardware",
