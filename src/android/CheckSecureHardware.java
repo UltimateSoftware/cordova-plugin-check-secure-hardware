@@ -17,6 +17,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.ProviderException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Calendar;
@@ -78,7 +79,7 @@ public class CheckSecureHardware extends CordovaPlugin {
       // Generate dummy key and import it to see if it's in hardware backed Secure Storage
       keyInfo = factory.getKeySpec(privateKey, KeyInfo.class);
       keyInfoGeneratedInSecureHardware = keyInfo.isInsideSecureHardware();
-    } catch (InvalidKeySpecException | InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchAlgorithmException | IllegalStateException e) {
+    } catch (InvalidKeySpecException | InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchAlgorithmException | IllegalStateException | ProviderException e) {
       keyErrorDesc = "Failed to generate RSA dummy key." + getErrorInfo(e);
     }
 
@@ -105,9 +106,10 @@ public class CheckSecureHardware extends CordovaPlugin {
    * @throws NoSuchProviderException
    * @throws NoSuchAlgorithmException
    * @throws IllegalStateException
+   * @throws ProviderException
    */
   @TargetApi(23)
-  private KeyPair generateKeyPairFromSpec() throws InvalidAlgorithmParameterException, NoSuchProviderException, NoSuchAlgorithmException, IllegalStateException {
+  private KeyPair generateKeyPairFromSpec() throws InvalidAlgorithmParameterException, NoSuchProviderException, NoSuchAlgorithmException, IllegalStateException, ProviderException {
     Calendar notBefore = Calendar.getInstance();
     Calendar notAfter = Calendar.getInstance();
     notAfter.add(Calendar.YEAR, 100);
